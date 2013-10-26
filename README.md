@@ -12,3 +12,5 @@ you define a time duration (ie. 1 min) and add items.  cardinal will give you a 
 
 ## why again?
 tracking the cardinality of streams enables smarter anomaly detection and response
+
+

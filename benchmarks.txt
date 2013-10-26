@@ -1,0 +1,9 @@
+=== RUN TestReset
+--- PASS: TestReset (0.00 seconds)
+=== RUN TestCardinality
+--- PASS: TestCardinality (0.00 seconds)
+PASS
+BenchmarkAdd	 1000000	      5008 ns/op
+BenchmarkCheck	 1000000	      3345 ns/op
+BenchmarkCardinality	20000000	       147 ns/op
+ok  	command-line-arguments	17.310s

@@ -95,6 +95,20 @@ func (c *Cardinal) Cardinality() float64 {
 
 }
 
+func (c *Cardinal) Uniques() (total uint) {
+
+	c.Lock()
+
+	for _, filter := range c.buf {
+		total += filter.uniques
+	}
+
+	c.Unlock()
+
+	return
+
+}
+
 func (c *Cardinal) Count() (total uint) {
 
 	c.Lock()

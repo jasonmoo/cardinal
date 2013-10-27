@@ -4,13 +4,13 @@
 
 (he's an angry bird)
 
-## why
-cardinal keeps track of your stream and tells you the cardinality of it
+## what
+cardinal is a simple way to measure cardinality of a stream
 
 ## how
-you define a time duration (ie. 1 min) and add items.  cardinal will give you a cardinality estimate in the form of a float representing the percentage of your stream that is unique
+a circular buffer of scalable bloom filters
 
-## why again?
-tracking the cardinality of streams enables smarter anomaly detection and response
+## why
+smarter anomaly detection and response
 
 

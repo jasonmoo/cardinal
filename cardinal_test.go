@@ -14,9 +14,53 @@ var (
 	runs = 10
 )
 
-func TestReset(t *testing.T) {
+func TestAddAndCount(t *testing.T) {
+
+	if ct := c.Count(); ct != 0 {
+		t.Errorf("Expected count: 0, got: %d", ct)
+	}
+
+	if ct := c.Uniques(); ct != 0 {
+		t.Errorf("Expected uniques: 0, got: %d", ct)
+	}
 
 	c.Add(a)
+
+	if ct := c.Count(); ct != 1 {
+		t.Errorf("Expected count: 1, got: %d", ct)
+	}
+
+	if ct := c.Uniques(); ct != 1 {
+		t.Errorf("Expected uniques: 1, got: %d", ct)
+	}
+
+	c.Add(a)
+
+	if ct := c.Count(); ct != 2 {
+		t.Errorf("Expected count: 2, got: %d", ct)
+	}
+
+	if ct := c.Uniques(); ct != 1 {
+		t.Errorf("Expected uniques: 1, got: %d", ct)
+	}
+
+}
+
+func TestCheck(t *testing.T) {
+
+	// missing value
+	if c.Check(b) {
+		t.Errorf("Expected false for missing value Check()")
+	}
+
+	// present value
+	if !c.Check(a) {
+		t.Errorf("Expected true for present value Check()")
+	}
+
+}
+
+func TestReset(t *testing.T) {
 
 	c.Reset()
 

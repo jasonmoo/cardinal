@@ -1,1 +1,1 @@
-time go test -v -test.run . -test.bench . cardinal*.go > benchmarks.txt
+time go test -v -test.run . -test.bench . cardinal*.go | tee benchmarks.txt

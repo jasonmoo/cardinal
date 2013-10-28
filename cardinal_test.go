@@ -64,8 +64,9 @@ func TestReset(t *testing.T) {
 
 	c.Reset()
 
-	if c.Count() != 0 || !math.IsNaN(c.Cardinality()) {
-		t.Errorf("Reset failed got: %d, %f (count, card)", c.Count(), c.Cardinality())
+	switch {
+	case c.Count() != 0, c.Uniques() != 0, !math.IsNaN(c.Cardinality()):
+		t.Errorf("Reset failed got: %d, %d, %f (count, uniques, card)", c.Count(), c.Uniques(), c.Cardinality())
 	}
 
 }

@@ -3,13 +3,11 @@ package cardinal
 import (
 	"github.com/jasonmoo/bloom"
 	"github.com/jasonmoo/bloom/scalable"
-	"sync"
 	"time"
 )
 
 type (
 	Cardinal struct {
-		sync.Mutex
 		buf            []*Filter
 		chunk_duration time.Duration
 
@@ -44,8 +42,6 @@ func New(duration time.Duration, n int) *Cardinal {
 
 func (c *Cardinal) Add(token []byte) {
 
-	c.Lock()
-
 	i := int(time.Now().Truncate(c.chunk_duration).UnixNano() % int64(len(c.buf)))
 
 	filter := c.buf[i]
@@ -62,28 +58,21 @@ func (c *Cardinal) Add(token []byte) {
 
 	filter.Add(token)
 
-	c.Unlock()
-
 }
 
 func (c *Cardinal) Check(token []byte) bool {
-
-	c.Lock()
-	defer c.Unlock()
 
 	for _, filter := range c.buf {
 		if filter.Check(token) {
 			return true
 		}
 	}
+
 	return false
 
 }
 
 func (c *Cardinal) Cardinality() float64 {
-
-	c.Lock()
-	defer c.Unlock()
 
 	var uniques, total uint
 
@@ -97,13 +86,9 @@ func (c *Cardinal) Cardinality() float64 {
 
 func (c *Cardinal) Uniques() (total uint) {
 
-	c.Lock()
-
 	for _, filter := range c.buf {
 		total += filter.uniques
 	}
-
-	c.Unlock()
 
 	return
 
@@ -111,13 +96,9 @@ func (c *Cardinal) Uniques() (total uint) {
 
 func (c *Cardinal) Count() (total uint) {
 
-	c.Lock()
-
 	for _, filter := range c.buf {
 		total += filter.Count()
 	}
-
-	c.Unlock()
 
 	return
 
@@ -125,14 +106,10 @@ func (c *Cardinal) Count() (total uint) {
 
 func (c *Cardinal) Reset() {
 
-	c.Lock()
-
 	for _, filter := range c.buf {
 		filter.Reset()
 		filter.uniques = 0
 	}
-
-	c.Unlock()
 
 }
 

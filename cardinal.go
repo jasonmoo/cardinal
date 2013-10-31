@@ -3,23 +3,28 @@ package cardinal
 import (
 	"github.com/jasonmoo/bloom"
 	"github.com/jasonmoo/bloom/scalable"
+	"sync"
 	"time"
 )
 
 type (
 	Cardinal struct {
-		buf     []*Filter
-		buf_len int64
+		sync.Mutex
+
+		buf []*Filter
 
 		duration       time.Duration
 		chunk_duration time.Duration
+		last_t         time.Time
+		i              uint
 
-		last_i int
+		filter *Filter
 	}
 
 	Filter struct {
 		bloom.Bloom
 		uniques uint
+		total   uint
 	}
 )
 
@@ -33,12 +38,11 @@ func New(duration time.Duration) *Cardinal {
 	buf := make([]*Filter, chunks)
 
 	for i, _ := range buf {
-		buf[i] = &Filter{scalable.New(chunk_size), 0}
+		buf[i] = &Filter{scalable.New(chunk_size), 0, 0}
 	}
 
 	return &Cardinal{
 		buf:            buf,
-		buf_len:        int64(len(buf)),
 		duration:       duration,
 		chunk_duration: duration / chunks,
 	}
@@ -47,25 +51,70 @@ func New(duration time.Duration) *Cardinal {
 
 func (c *Cardinal) Add(token []byte) {
 
-	i := int(time.Now().Truncate(c.chunk_duration).UnixNano() % c.buf_len)
+	c.Lock()
 
-	filter := c.buf[i]
+	t := time.Now().Truncate(c.chunk_duration)
 
-	if c.last_i != i {
-		c.last_i = i
-		filter.Reset()
-		filter.uniques = 0
+	if !t.Equal(c.last_t) {
+		c.last_t = t
+		c.i++
+		c.filter = c.buf[c.i%uint(len(c.buf))]
+		c.filter.reset()
 	}
 
-	if !filter.Check(token) {
-		filter.uniques++
+	// check all filters before incrementing
+	if !c.check(token) {
+		c.filter.Add(token)
+		c.filter.uniques++
 	}
 
-	filter.Add(token)
+	c.filter.total++
+
+	c.Unlock()
 
 }
 
-func (c *Cardinal) Check(token []byte) bool {
+func (c *Cardinal) Check(token []byte) (r bool) {
+	c.Lock()
+	r = c.check(token)
+	c.Unlock()
+	return
+}
+
+func (c *Cardinal) Cardinality() (r float64) {
+	c.Lock()
+	r = c.cardinality()
+	c.Unlock()
+	return
+}
+
+func (c *Cardinal) Count() (r uint) {
+	c.Lock()
+	r = c.count()
+	c.Unlock()
+	return
+}
+
+func (c *Cardinal) Uniques() (r uint) {
+	c.Lock()
+	r = c.uniques()
+	c.Unlock()
+	return
+}
+
+func (c *Cardinal) Duration() time.Duration {
+	return c.duration
+}
+
+func (c *Cardinal) Reset() {
+	c.Lock()
+	for _, filter := range c.buf {
+		filter.reset()
+	}
+	c.Unlock()
+}
+
+func (c *Cardinal) check(token []byte) bool {
 
 	for _, filter := range c.buf {
 		if filter.Check(token) {
@@ -77,49 +126,40 @@ func (c *Cardinal) Check(token []byte) bool {
 
 }
 
-func (c *Cardinal) Cardinality() float64 {
+func (c *Cardinal) cardinality() float64 {
 
 	var uniques, total uint
 
 	for _, filter := range c.buf {
-		uniques, total = uniques+filter.uniques, total+filter.Count()
+		uniques, total = uniques+filter.uniques, total+filter.total
 	}
 
 	return float64(uniques) / float64(total)
 
 }
 
-func (c *Cardinal) Uniques() (total uint) {
+func (c *Cardinal) count() (total uint) {
 
 	for _, filter := range c.buf {
-		total += filter.uniques
+		total += filter.total
 	}
 
 	return
 
 }
 
-func (c *Cardinal) Count() (total uint) {
+func (c *Cardinal) uniques() (uniques uint) {
 
 	for _, filter := range c.buf {
-		total += filter.Count()
+		uniques += filter.uniques
 	}
 
 	return
 
 }
 
-func (c *Cardinal) Duration() time.Duration {
-
-	return c.duration
-
-}
-
-func (c *Cardinal) Reset() {
-
-	for _, filter := range c.buf {
-		filter.Reset()
-		filter.uniques = 0
-	}
-
+func (f *Filter) reset() {
+	f.Bloom.Reset()
+	f.uniques = 0
+	f.total = 0
 }

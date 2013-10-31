@@ -1,6 +1,6 @@
 #Cardinal
 
-![](http://cl.ly/image/062e3k0d2S43/NorthernCardinal2.jpg)
+![](http://cl.ly/image/1O1S2u0N0U1p/Image%202013.10.31%2011%3A15%3A46%20AM.jpeg)
 
 (he's an angry bird)
 

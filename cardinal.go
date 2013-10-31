@@ -8,7 +8,10 @@ import (
 
 type (
 	Cardinal struct {
-		buf            []*Filter
+		buf     []*Filter
+		buf_len int64
+
+		duration       time.Duration
 		chunk_duration time.Duration
 
 		last_i int
@@ -35,6 +38,8 @@ func New(duration time.Duration) *Cardinal {
 
 	return &Cardinal{
 		buf:            buf,
+		buf_len:        int64(len(buf)),
+		duration:       duration,
 		chunk_duration: duration / chunks,
 	}
 
@@ -42,7 +47,7 @@ func New(duration time.Duration) *Cardinal {
 
 func (c *Cardinal) Add(token []byte) {
 
-	i := int(time.Now().Truncate(c.chunk_duration).UnixNano() % int64(len(c.buf)))
+	i := int(time.Now().Truncate(c.chunk_duration).UnixNano() % c.buf_len)
 
 	filter := c.buf[i]
 
@@ -101,6 +106,12 @@ func (c *Cardinal) Count() (total uint) {
 	}
 
 	return
+
+}
+
+func (c *Cardinal) Duration() time.Duration {
+
+	return c.duration
 
 }
 

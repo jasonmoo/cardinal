@@ -7,7 +7,7 @@
 === RUN TestCardinality
 --- PASS: TestCardinality (0.00 seconds)
 PASS
-BenchmarkAdd	 1000000	      2024 ns/op
-BenchmarkCheck	 1000000	      1055 ns/op
-BenchmarkCardinality	50000000	        57.8 ns/op
-ok  	command-line-arguments	8.644s
+BenchmarkAdd	 1000000	      1978 ns/op
+BenchmarkCheck	 1000000	      1044 ns/op
+BenchmarkCardinality	50000000	        56.9 ns/op
+ok  	command-line-arguments	8.499s

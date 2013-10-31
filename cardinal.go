@@ -20,17 +20,17 @@ type (
 	}
 )
 
-func New(duration time.Duration, n int) *Cardinal {
+func New(duration time.Duration) *Cardinal {
 
 	const (
-		chunks = 10
-		min_n  = 1000
+		chunks          = 10
+		chunk_size uint = 4096
 	)
 
-	buf, chunk_n := make([]*Filter, chunks), uint(max(min_n, n/chunks))
+	buf := make([]*Filter, chunks)
 
 	for i, _ := range buf {
-		buf[i] = &Filter{scalable.New(chunk_n), 0}
+		buf[i] = &Filter{scalable.New(chunk_size), 0}
 	}
 
 	return &Cardinal{

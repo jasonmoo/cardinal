@@ -10,7 +10,7 @@ import (
 var (
 	a    = []byte("a")
 	b    = []byte("b")
-	c    = New(time.Second, 10000)
+	c    = New(time.Second)
 	runs = 10
 )
 
@@ -97,7 +97,7 @@ func TestCardinality(t *testing.T) {
 
 func BenchmarkAdd(b *testing.B) {
 
-	c := New(time.Second, 1000)
+	c := New(time.Second)
 
 	b.ResetTimer()
 
@@ -109,7 +109,7 @@ func BenchmarkAdd(b *testing.B) {
 
 func BenchmarkCheck(b *testing.B) {
 
-	a, c := []byte{'a'}, New(time.Second, 1000)
+	a, c := []byte{'a'}, New(time.Second)
 
 	for i := 0; i < b.N; i++ {
 		c.Add(a)
@@ -125,7 +125,7 @@ func BenchmarkCheck(b *testing.B) {
 
 func BenchmarkCardinality(b *testing.B) {
 
-	a, c := []byte{'a'}, New(time.Second, 1000)
+	a, c := []byte{'a'}, New(time.Second)
 
 	for i := 0; i < 100000; i++ {
 		c.Add(a)

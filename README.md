@@ -13,4 +13,4 @@ a circular buffer of scalable bloom filters
 ## why
 smarter anomaly detection and response
 
-
+[MIT](https://raw.github.com/jasonmoo/cardinal/master/LICENSE)

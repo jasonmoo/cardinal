@@ -1,10 +1,11 @@
 package cardinal
 
 import (
-	"github.com/jasonmoo/bloom"
-	"github.com/jasonmoo/bloom/scalable"
 	"sync"
 	"time"
+
+	"github.com/jasonmoo/bloom"
+	"github.com/jasonmoo/bloom/scalable"
 )
 
 type (
@@ -16,35 +17,37 @@ type (
 		duration       time.Duration
 		chunk_duration time.Duration
 		last_t         time.Time
-		i              uint
+		i              int
 
 		filter *Filter
 	}
 
 	Filter struct {
 		bloom.Bloom
-		uniques uint
-		total   uint
+		uniques uint64
+		total   uint64
 	}
+)
+
+const (
+	CHUNKS     = 10
+	CHUNK_SIZE = 4096
 )
 
 func New(duration time.Duration) *Cardinal {
 
-	const (
-		chunks          = 10
-		chunk_size uint = 4096
-	)
+	buf := make([]*Filter, CHUNKS)
 
-	buf := make([]*Filter, chunks)
-
+	// initialize with modest size to ensure
 	for i, _ := range buf {
-		buf[i] = &Filter{scalable.New(chunk_size), 0, 0}
+		buf[i] = &Filter{scalable.New(CHUNK_SIZE), 0, 0}
 	}
 
 	return &Cardinal{
 		buf:            buf,
+		filter:         buf[0],
 		duration:       duration,
-		chunk_duration: duration / chunks,
+		chunk_duration: duration / CHUNKS,
 	}
 
 }
@@ -58,8 +61,11 @@ func (c *Cardinal) Add(token []byte) {
 	if !t.Equal(c.last_t) {
 		c.last_t = t
 		c.i++
-		c.filter = c.buf[c.i%uint(len(c.buf))]
-		c.filter.reset()
+		next_i := c.i % len(c.buf)
+		// always create a new filter with the size of the previous
+		// as the estimated number of items to minimize collisions
+		c.buf[next_i] = &Filter{scalable.New(min(CHUNK_SIZE, c.filter.Count())), 0, 0}
+		c.filter = c.buf[next_i]
 	}
 
 	// check all filters before incrementing
@@ -88,14 +94,14 @@ func (c *Cardinal) Cardinality() (r float64) {
 	return
 }
 
-func (c *Cardinal) Count() (r uint) {
+func (c *Cardinal) Count() (r uint64) {
 	c.Lock()
 	r = c.count()
 	c.Unlock()
 	return
 }
 
-func (c *Cardinal) Uniques() (r uint) {
+func (c *Cardinal) Uniques() (r uint64) {
 	c.Lock()
 	r = c.uniques()
 	c.Unlock()
@@ -128,7 +134,7 @@ func (c *Cardinal) check(token []byte) bool {
 
 func (c *Cardinal) cardinality() float64 {
 
-	var uniques, total uint
+	var uniques, total uint64
 
 	for _, filter := range c.buf {
 		uniques, total = uniques+filter.uniques, total+filter.total
@@ -138,7 +144,7 @@ func (c *Cardinal) cardinality() float64 {
 
 }
 
-func (c *Cardinal) count() (total uint) {
+func (c *Cardinal) count() (total uint64) {
 
 	for _, filter := range c.buf {
 		total += filter.total
@@ -148,7 +154,7 @@ func (c *Cardinal) count() (total uint) {
 
 }
 
-func (c *Cardinal) uniques() (uniques uint) {
+func (c *Cardinal) uniques() (uniques uint64) {
 
 	for _, filter := range c.buf {
 		uniques += filter.uniques
@@ -162,4 +168,11 @@ func (f *Filter) reset() {
 	f.Bloom.Reset()
 	f.uniques = 0
 	f.total = 0
+}
+
+func min(a, b uint) uint {
+	if a < b {
+		return b
+	}
+	return a
 }

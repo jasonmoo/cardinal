@@ -4,8 +4,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jasonmoo/bloom"
-	"github.com/jasonmoo/bloom/scalable"
+	"github.com/dataence/bloom"
+	"github.com/dataence/bloom/scalable"
 )
 
 type (

@@ -7,7 +7,7 @@
 === RUN TestCardinality
 --- PASS: TestCardinality (0.00 seconds)
 PASS
-BenchmarkAdd	 5000000	       621 ns/op	      16 B/op	       1 allocs/op
-BenchmarkCheck	 5000000	       565 ns/op	      16 B/op	       1 allocs/op
-BenchmarkCardinality	50000000	        39.7 ns/op	       0 B/op	       0 allocs/op
-ok  	github.com/jasonmoo/cardinal	13.154s
+BenchmarkAdd	 5000000	       514 ns/op	      16 B/op	       1 allocs/op
+BenchmarkCheck	 5000000	       470 ns/op	      16 B/op	       1 allocs/op
+BenchmarkCardinality	50000000	        33.5 ns/op	       0 B/op	       0 allocs/op
+ok  	github.com/jasonmoo/cardinal	11.052s

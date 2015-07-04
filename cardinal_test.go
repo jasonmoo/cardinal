@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	a    = []byte("a")
-	b    = []byte("b")
+	a    = "a"
+	b    = "b"
 	c    = New(time.Second)
 	runs = 10
 )
@@ -77,7 +77,7 @@ func TestCardinality(t *testing.T) {
 
 	// each item unique == 1.0 every time
 	for i := 0; i < runs; i++ {
-		c.Add([]byte(strconv.Itoa(i)))
+		c.Add(strconv.Itoa(i))
 		if card := c.Cardinality(); card != 1 {
 			t.Errorf("Expected cardinality: 1, got: %f", card)
 		}
@@ -109,11 +109,8 @@ func BenchmarkAdd(b *testing.B) {
 
 func BenchmarkCheck(b *testing.B) {
 
-	a, c := []byte{'a'}, New(time.Second)
-
-	for i := 0; i < b.N; i++ {
-		c.Add(a)
-	}
+	a, c := "a", New(time.Second)
+	c.Add(a)
 
 	b.ResetTimer()
 
@@ -125,7 +122,7 @@ func BenchmarkCheck(b *testing.B) {
 
 func BenchmarkCardinality(b *testing.B) {
 
-	a, c := []byte{'a'}, New(time.Second)
+	a, c := "a", New(time.Second)
 
 	for i := 0; i < 100000; i++ {
 		c.Add(a)

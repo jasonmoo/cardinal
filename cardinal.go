@@ -3,9 +3,6 @@ package cardinal
 import (
 	"sync"
 	"time"
-
-	"github.com/dataence/bloom"
-	"github.com/dataence/bloom/scalable"
 )
 
 type (
@@ -23,7 +20,7 @@ type (
 	}
 
 	Filter struct {
-		bloom.Bloom
+		set     map[string]struct{}
 		uniques uint64
 		total   uint64
 	}
@@ -38,9 +35,8 @@ func New(duration time.Duration) *Cardinal {
 
 	buf := make([]*Filter, CHUNKS)
 
-	// initialize with modest size to ensure
 	for i, _ := range buf {
-		buf[i] = &Filter{scalable.New(CHUNK_SIZE), 0, 0}
+		buf[i] = &Filter{set: map[string]struct{}{}}
 	}
 
 	return &Cardinal{
@@ -52,7 +48,7 @@ func New(duration time.Duration) *Cardinal {
 
 }
 
-func (c *Cardinal) Add(token []byte) {
+func (c *Cardinal) Add(token string) {
 
 	c.Lock()
 
@@ -64,13 +60,13 @@ func (c *Cardinal) Add(token []byte) {
 		next_i := c.i % len(c.buf)
 		// always create a new filter with the size of the previous
 		// as the estimated number of items to minimize collisions
-		c.buf[next_i] = &Filter{scalable.New(min(CHUNK_SIZE, c.filter.Count())), 0, 0}
+		c.buf[next_i] = &Filter{set: map[string]struct{}{}}
 		c.filter = c.buf[next_i]
 	}
 
 	// check all filters before incrementing
 	if !c.check(token) {
-		c.filter.Add(token)
+		c.filter.set[token] = struct{}{}
 		c.filter.uniques++
 	}
 
@@ -80,7 +76,7 @@ func (c *Cardinal) Add(token []byte) {
 
 }
 
-func (c *Cardinal) Check(token []byte) (r bool) {
+func (c *Cardinal) Check(token string) (r bool) {
 	c.Lock()
 	r = c.check(token)
 	c.Unlock()
@@ -120,10 +116,10 @@ func (c *Cardinal) Reset() {
 	c.Unlock()
 }
 
-func (c *Cardinal) check(token []byte) bool {
+func (c *Cardinal) check(token string) bool {
 
 	for _, filter := range c.buf {
-		if filter.Check(token) {
+		if _, exists := filter.set[token]; exists {
 			return true
 		}
 	}
@@ -165,7 +161,7 @@ func (c *Cardinal) uniques() (uniques uint64) {
 }
 
 func (f *Filter) reset() {
-	f.Bloom.Reset()
+	f.set = map[string]struct{}{}
 	f.uniques = 0
 	f.total = 0
 }

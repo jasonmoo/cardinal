@@ -1,13 +1,13 @@
 === RUN TestAddAndCount
---- PASS: TestAddAndCount (0.00 seconds)
+--- PASS: TestAddAndCount (0.00s)
 === RUN TestCheck
---- PASS: TestCheck (0.00 seconds)
+--- PASS: TestCheck (0.00s)
 === RUN TestReset
---- PASS: TestReset (0.00 seconds)
+--- PASS: TestReset (0.00s)
 === RUN TestCardinality
---- PASS: TestCardinality (0.00 seconds)
+--- PASS: TestCardinality (0.00s)
 PASS
-BenchmarkAdd	 5000000	       514 ns/op	      16 B/op	       1 allocs/op
-BenchmarkCheck	 5000000	       470 ns/op	      16 B/op	       1 allocs/op
-BenchmarkCardinality	50000000	        33.5 ns/op	       0 B/op	       0 allocs/op
-ok  	github.com/jasonmoo/cardinal	11.052s
+BenchmarkAdd	10000000	       127 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCheck	30000000	        51.4 ns/op	       0 B/op	       0 allocs/op
+BenchmarkCardinality	30000000	        49.0 ns/op	       0 B/op	       0 allocs/op
+ok  	github.com/jasonmoo/cardinal	4.587s
